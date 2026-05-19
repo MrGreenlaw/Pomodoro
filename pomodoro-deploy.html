@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pomodoro</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:#07111f}
+:root{
+  --bg:#07111f;--navy-mid:#0e1e32;--navy-card:#111f35;
+  --ring:#1a2e4a;--ring2:#243d5e;
+  --silver:#b8cad8;--silver-dim:#5a7a96;--silver-bright:#dde8f0;
+  --accent:#3a7bd5;--accent-dim:#2558a0;--accent-muted:#1a3a6a;
+  --font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --font-serif:Georgia,serif;
+}
+.outer{
+  background:var(--bg);
+  width:100%;height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:4% 6%;position:relative;overflow:hidden;
+}
+.flash-overlay{position:absolute;inset:0;background:#c8dff0;pointer-events:none;opacity:0;transition:opacity .1s}
+
+.fs-btn{
+  position:absolute;top:20px;right:20px;
+  background:transparent;border:1px solid var(--ring2);color:var(--silver-dim);
+  width:36px;height:36px;border-radius:8px;font-size:16px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .2s;z-index:10;
+}
+.fs-btn:hover{border-color:var(--silver-dim);color:var(--silver)}
+
+.mode-row{
+  display:flex;justify-content:center;
+  background:var(--navy-mid);border-radius:30px;border:1px solid var(--ring);
+  padding:3px;margin-bottom:4%;flex-shrink:0;
+}
+.mode-btn{
+  background:transparent;border:none;color:var(--silver-dim);
+  padding:5px 20px;border-radius:26px;font-size:clamp(10px,1.8vw,12px);letter-spacing:.15em;
+  cursor:pointer;transition:all .25s;font-family:var(--font-sans);text-transform:uppercase;
+}
+.mode-btn.active{background:var(--accent-muted);color:var(--silver-bright)}
+
+.dial-wrap{
+  display:flex;justify-content:center;align-items:center;
+  width:clamp(160px,38vh,280px);aspect-ratio:1;
+  cursor:grab;flex-shrink:0;margin-bottom:4%;
+}
+.dial-wrap:active{cursor:grabbing}
+.dial-face{width:100%;height:100%;border-radius:50%;position:relative}
+.dial-time{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+}
+.dial-label{font-size:clamp(9px,1.5vw,11px);color:var(--silver-dim);letter-spacing:.2em;text-transform:uppercase;margin-bottom:4px;font-family:var(--font-sans)}
+.dial-number{font-size:clamp(36px,10vh,58px);font-weight:400;color:var(--silver-bright);letter-spacing:1px;line-height:1;font-family:var(--font-serif)}
+.dial-unit{font-size:clamp(9px,1.5vw,11px);color:var(--silver-dim);margin-top:4px;letter-spacing:.15em;text-transform:uppercase;font-family:var(--font-sans)}
+
+.controls{display:flex;justify-content:center;align-items:center;gap:clamp(16px,4vw,32px);margin-bottom:4%;flex-shrink:0}
+.ctrl-btn{
+  background:transparent;border:1px solid var(--ring2);color:var(--silver-dim);
+  width:clamp(34px,6vw,44px);height:clamp(34px,6vw,44px);border-radius:50%;font-size:clamp(13px,2.5vw,16px);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;
+}
+.ctrl-btn:hover{border-color:var(--silver-dim);color:var(--silver)}
+.ctrl-btn.primary{
+  width:clamp(50px,9vw,64px);height:clamp(50px,9vw,64px);font-size:clamp(18px,3.5vw,22px);
+  border:1px solid var(--accent-dim);color:var(--silver-bright);background:var(--accent-muted);
+}
+.ctrl-btn.primary:hover{background:var(--accent-dim);border-color:var(--accent)}
+
+.status-row{text-align:center;margin-bottom:3%;min-height:16px;flex-shrink:0}
+.status-text{font-size:clamp(9px,1.5vw,11px);color:var(--silver-dim);letter-spacing:.2em;text-transform:uppercase;font-family:var(--font-sans)}
+
+.session-row{display:flex;justify-content:center;gap:8px;margin-bottom:4%;flex-shrink:0}
+.pip{width:5px;height:5px;border-radius:50%;background:var(--ring2)}
+.pip.done{background:var(--accent)}
+
+.divider{width:100%;max-width:320px;border:none;border-top:1px solid var(--ring);margin-bottom:3%;flex-shrink:0}
+
+.settings-row{display:grid;grid-template-columns:1fr 1fr;gap:clamp(6px,1.5vw,12px);width:100%;max-width:320px;flex-shrink:0}
+.setting-block{text-align:center;padding:clamp(8px,2vw,12px);border-radius:12px;background:var(--navy-mid);border:1px solid var(--ring)}
+.setting-label{font-size:clamp(9px,1.5vw,11px);color:var(--silver-dim);letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px;font-family:var(--font-sans)}
+.setting-ctrl{display:flex;align-items:center;justify-content:center;gap:clamp(8px,2vw,14px)}
+.adj-btn{
+  background:transparent;border:none;color:var(--silver-dim);
+  width:22px;height:22px;font-size:clamp(14px,2.5vw,18px);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:color .15s;line-height:1;
+  font-family:var(--font-sans);
+}
+.adj-btn:hover{color:var(--silver-bright)}
+.setting-val{font-size:clamp(15px,3vw,20px);font-weight:400;color:var(--silver);min-width:28px;text-align:center;font-family:var(--font-serif)}
+
+.done-banner{
+  text-align:center;padding:clamp(10px,2.5vw,16px);margin-bottom:3%;
+  border:1px solid var(--accent-muted);border-radius:14px;
+  background:rgba(26,58,106,0.4);width:100%;max-width:320px;flex-shrink:0;
+}
+.done-banner p{font-size:clamp(11px,1.8vw,13px);color:var(--silver);margin-bottom:8px;letter-spacing:.06em;line-height:1.6;font-family:var(--font-sans)}
+.done-banner button{
+  background:transparent;border:1px solid var(--accent-dim);color:var(--silver-bright);
+  padding:6px 20px;border-radius:20px;font-size:clamp(9px,1.5vw,11px);letter-spacing:.18em;
+  cursor:pointer;font-family:var(--font-sans);text-transform:uppercase;transition:all .2s;
+}
+.done-banner button:hover{background:var(--accent-muted)}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="outer" id="outer">
+  <div class="flash-overlay" id="flash"></div>
+
+  <button class="fs-btn" id="fs-btn" onclick="toggleFS()" aria-label="Toggle fullscreen">
+    <i class="ti ti-maximize" id="fs-icon"></i>
+  </button>
+
+  <div class="mode-row">
+    <button class="mode-btn active" id="btn-work" onclick="switchMode('work')">Focus</button>
+    <button class="mode-btn" id="btn-break" onclick="switchMode('break')">Break</button>
+  </div>
+
+  <div id="done-banner" class="done-banner hidden">
+    <p id="done-msg">Session complete</p>
+    <button onclick="acknowledge()">Continue</button>
+  </div>
+
+  <div class="dial-wrap" id="dial-wrap">
+    <div class="dial-face" id="dial">
+      <svg viewBox="0 0 210 210" style="position:absolute;inset:0;width:100%;height:100%">
+        <circle cx="105" cy="105" r="95" fill="none" stroke="#0e1e32" stroke-width="1"/>
+        <circle cx="105" cy="105" r="86" fill="#07111f" stroke="#1a2e4a" stroke-width="1"/>
+        <circle cx="105" cy="105" r="78" fill="none" stroke="#1a2e4a" stroke-width="0.5" stroke-dasharray="3 5"/>
+        <circle cx="105" cy="105" r="68" fill="none" stroke="#243d5e" stroke-width="1.5"/>
+        <circle cx="105" cy="105" r="68" fill="none" stroke="#3a7bd5" stroke-width="1.5"
+          stroke-dasharray="427.26" stroke-dashoffset="427.26"
+          stroke-linecap="round" transform="rotate(-90 105 105)" id="progress-arc"/>
+        <line x1="105" y1="24" x2="105" y2="36" stroke="#b8cad8" stroke-width="1.5" stroke-linecap="round"
+          id="hand" transform="rotate(0 105 105)"/>
+        <circle cx="105" cy="105" r="52" fill="#0a1628" stroke="#1a2e4a" stroke-width="0.5"/>
+      </svg>
+      <div class="dial-time">
+        <span class="dial-label" id="mode-label">Focus</span>
+        <span class="dial-number" id="time-display">25:00</span>
+        <span class="dial-unit">min</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="ctrl-btn" onclick="resetTimer()" aria-label="Reset">
+      <i class="ti ti-refresh"></i>
+    </button>
+    <button class="ctrl-btn primary" id="play-btn" onclick="toggleTimer()" aria-label="Start">
+      <i class="ti ti-player-play" id="play-icon"></i>
+    </button>
+    <div style="width:clamp(34px,6vw,44px)"></div>
+  </div>
+
+  <div class="status-row"><span class="status-text" id="status-text">Ready</span></div>
+  <div class="session-row" id="pips"></div>
+  <hr class="divider">
+
+  <div class="settings-row">
+    <div class="setting-block">
+      <div class="setting-label">Focus</div>
+      <div class="setting-ctrl">
+        <button class="adj-btn" onclick="adjustTime('work',-1)">−</button>
+        <span class="setting-val" id="work-val">25</span>
+        <button class="adj-btn" onclick="adjustTime('work',1)">+</button>
+      </div>
+    </div>
+    <div class="setting-block">
+      <div class="setting-label">Break</div>
+      <div class="setting-ctrl">
+        <button class="adj-btn" onclick="adjustTime('break',-1)">−</button>
+        <span class="setting-val" id="break-val">5</span>
+        <button class="adj-btn" onclick="adjustTime('break',1)">+</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var workMins=25,breakMins=5,mode='work',running=false;
+var remaining=25*60,totalSecs=25*60;
+var interval=null,flashInterval=null,sessCount=0,maxSess=4,waiting=false;
+var isDragging=false,dragStartAngle=0,dragStartMins=0;
+
+function fmt(s){var m=Math.floor(s/60),sec=s%60;return(m<10?'0':'')+m+':'+(sec<10?'0':'')+sec}
+function updateDisplay(){
+  document.getElementById('time-display').textContent=fmt(remaining);
+  var circ=2*Math.PI*68,pct=1-(remaining/totalSecs);
+  document.getElementById('progress-arc').setAttribute('stroke-dashoffset',(circ*(1-pct)).toFixed(2));
+  document.getElementById('hand').setAttribute('transform','rotate('+(pct*360)+' 105 105)');
+}
+function updatePips(){
+  var el=document.getElementById('pips');el.innerHTML='';
+  for(var i=0;i<maxSess;i++){var d=document.createElement('div');d.className='pip'+(i<sessCount?' done':'');el.appendChild(d);}
+}
+function setStatus(t){document.getElementById('status-text').textContent=t}
+function setMode(m){
+  mode=m;totalSecs=(m==='work'?workMins:breakMins)*60;remaining=totalSecs;
+  document.getElementById('mode-label').textContent=m==='work'?'Focus':'Break';
+  document.getElementById('btn-work').className='mode-btn'+(m==='work'?' active':'');
+  document.getElementById('btn-break').className='mode-btn'+(m==='break'?' active':'');
+  document.getElementById('work-val').textContent=workMins;
+  document.getElementById('break-val').textContent=breakMins;
+  updateDisplay();
+}
+function switchMode(m){if(!running&&!waiting)setMode(m),setStatus('Ready');}
+function toggleTimer(){
+  if(waiting)return;
+  if(running){clearInterval(interval);running=false;document.getElementById('play-icon').className='ti ti-player-play';setStatus('Paused');}
+  else{running=true;document.getElementById('play-icon').className='ti ti-player-pause';setStatus(mode==='work'?'Focusing...':'On break...');interval=setInterval(tick,1000);}
+}
+function tick(){if(remaining<=0){clearInterval(interval);running=false;sessionDone();return;}remaining--;updateDisplay();}
+function sessionDone(){
+  document.getElementById('play-icon').className='ti ti-player-play';
+  waiting=true;startFlash();
+  if(mode==='work')sessCount=Math.min(sessCount+1,maxSess),updatePips();
+  document.getElementById('done-msg').textContent=mode==='work'?'Focus session complete — time for a break.':'Break over — ready to focus?';
+  document.getElementById('done-banner').classList.remove('hidden');
+  setStatus('Session complete');
+}
+function acknowledge(){
+  stopFlash();waiting=false;
+  document.getElementById('done-banner').classList.add('hidden');
+  var nx=mode==='work'?'break':'work';
+  if(sessCount>=maxSess&&nx==='work'){sessCount=0;updatePips();}
+  setMode(nx);setStatus('Ready');
+}
+function resetTimer(){
+  clearInterval(interval);stopFlash();running=false;waiting=false;
+  document.getElementById('play-icon').className='ti ti-player-play';
+  document.getElementById('done-banner').classList.add('hidden');
+  setMode(mode);setStatus('Ready');
+}
+function adjustTime(which,delta){
+  if(running||waiting)return;
+  if(which==='work')workMins=Math.max(1,Math.min(90,workMins+delta));
+  else breakMins=Math.max(1,Math.min(30,breakMins+delta));
+  document.getElementById('work-val').textContent=workMins;
+  document.getElementById('break-val').textContent=breakMins;
+  if(which===mode)setMode(mode);
+}
+function startFlash(){
+  var fl=document.getElementById('flash'),on=false;
+  flashInterval=setInterval(function(){on=!on;fl.style.opacity=on?'0.22':'0';},700);
+}
+function stopFlash(){
+  if(flashInterval){clearInterval(flashInterval);flashInterval=null;}
+  document.getElementById('flash').style.opacity='0';
+}
+function toggleFS(){
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen();
+    document.getElementById('fs-icon').className='ti ti-minimize';
+  } else {
+    document.exitFullscreen();
+    document.getElementById('fs-icon').className='ti ti-maximize';
+  }
+}
+document.addEventListener('fullscreenchange',function(){
+  if(!document.fullscreenElement)document.getElementById('fs-icon').className='ti ti-maximize';
+});
+
+var dw=document.getElementById('dial-wrap');
+function ang(e,r){
+  var cx=r.left+r.width/2,cy=r.top+r.height/2;
+  var px=e.touches?e.touches[0].clientX:e.clientX,py=e.touches?e.touches[0].clientY:e.clientY;
+  return Math.atan2(py-cy,px-cx)*180/Math.PI;
+}
+dw.addEventListener('mousedown',function(e){if(running||waiting)return;isDragging=true;dragStartAngle=ang(e,dw.getBoundingClientRect());dragStartMins=mode==='work'?workMins:breakMins;e.preventDefault();});
+document.addEventListener('mousemove',function(e){
+  if(!isDragging)return;
+  var diff=(ang(e,dw.getBoundingClientRect())-dragStartAngle)/6;
+  var nm=Math.round(Math.max(1,Math.min(mode==='work'?90:30,dragStartMins+diff)));
+  if(mode==='work')workMins=nm,document.getElementById('work-val').textContent=nm;
+  else breakMins=nm,document.getElementById('break-val').textContent=nm;
+  setMode(mode);
+});
+document.addEventListener('mouseup',function(){isDragging=false;});
+dw.addEventListener('touchstart',function(e){if(running||waiting)return;isDragging=true;dragStartAngle=ang(e,dw.getBoundingClientRect());dragStartMins=mode==='work'?workMins:breakMins;e.preventDefault();},{passive:false});
+document.addEventListener('touchmove',function(e){
+  if(!isDragging)return;
+  var diff=(ang(e,dw.getBoundingClientRect())-dragStartAngle)/6;
+  var nm=Math.round(Math.max(1,Math.min(mode==='work'?90:30,dragStartMins+diff)));
+  if(mode==='work')workMins=nm,document.getElementById('work-val').textContent=nm;
+  else breakMins=nm,document.getElementById('break-val').textContent=nm;
+  setMode(mode);
+},{passive:false});
+document.addEventListener('touchend',function(){isDragging=false;});
+setMode('work');updatePips();
+</script>
+</body>
+</html>
