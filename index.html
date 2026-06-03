@@ -17,7 +17,7 @@ html,body{width:100%;height:100%;background:#07111f;overflow:hidden;color:#dde2e
   --navy:#0e1e32;
   --navy-2:#152944;
   --silver:#b8cad8;
-  --silver-dim:#5a7a96;
+  --silver-dim:#92acc2;
   --silver-bright:#dde8f0;
   --warm-silver:#d4ccc0;
   --accent:#3a7bd5;
@@ -178,9 +178,9 @@ html,body{width:100%;height:100%;background:#07111f;overflow:hidden;color:#dde2e
   pointer-events:none;
 }
 .fs-btn{
-  background:rgba(10,20,38,0.5);backdrop-filter:blur(12px);
+  background:rgba(184,202,216,0.25);backdrop-filter:blur(12px);
   -webkit-backdrop-filter:blur(12px);
-  border:1px solid var(--line);color:var(--silver-dim);
+  border:1px solid var(--line-2);color:var(--silver-dim);
   width:10px;height:10px;border-radius:50%;
   font-size:0;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
@@ -191,12 +191,14 @@ html,body{width:100%;height:100%;background:#07111f;overflow:hidden;color:#dde2e
     border-radius .55s cubic-bezier(0.22,0.61,0.36,1),
     font-size .35s ease .15s,
     border-color .3s ease,
+    background .3s ease,
     color .3s ease;
 }
 .fs-btn:hover{
   width:38px;height:38px;
   border-radius:10px;
   font-size:15px;
+  background:rgba(10,20,38,0.5);
   border-color:var(--line-2);
   color:var(--silver-bright);
 }
@@ -236,6 +238,19 @@ html,body{width:100%;height:100%;background:#07111f;overflow:hidden;color:#dde2e
   transition:opacity .4s ease;
 }
 .idle .center-sub{opacity:0.4}
+.center-task{
+  font-family:var(--sans);font-size:13px;font-weight:300;
+  letter-spacing:0.06em;
+  color:var(--silver);
+  margin-top:20px;
+  max-width:80vw;
+  text-align:center;
+  opacity:0;
+  transition:opacity .4s ease;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.center-task.show{opacity:0.75}
+.idle .center-task.show{opacity:0.5}
 
 /* ============ DONE BANNER ============ */
 .done-banner{
@@ -277,16 +292,17 @@ html,body{width:100%;height:100%;background:#07111f;overflow:hidden;color:#dde2e
 }
 
 .dock{
-  background:var(--glass);
+  background:rgba(184,202,216,0.3);
   backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
-  border:1px solid var(--line);
+  border:1px solid var(--line-2);
   border-radius:999px;
   transition:
     width .55s cubic-bezier(0.22,0.61,0.36,1),
     height .55s cubic-bezier(0.22,0.61,0.36,1),
     border-radius .55s cubic-bezier(0.22,0.61,0.36,1),
     border-color .35s ease,
+    background .35s ease,
     opacity .45s ease,
     transform .45s ease;
   overflow:hidden;
@@ -302,6 +318,7 @@ html,body{width:100%;height:100%;background:#07111f;overflow:hidden;color:#dde2e
   min-height:56px;
   border-radius:20px;
   border-color:var(--line-2);
+  background:var(--glass);
   cursor:default;
 }
 
@@ -366,13 +383,30 @@ html,body{width:100%;height:100%;background:#07111f;overflow:hidden;color:#dde2e
   transition:max-height .55s cubic-bezier(0.22,0.61,0.36,1);
 }
 .dock:hover .dock-panel,
-.dock.open .dock-panel{max-height:340px}
+.dock.open .dock-panel{max-height:520px}
 
 .dock-panel-inner{
   padding:4px 16px 16px;
   border-top:1px solid var(--line);
   margin-top:0;
 }
+
+/* Task input */
+.task-input{
+  width:100%;
+  background:rgba(5,10,20,0.45);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:11px 14px;
+  margin:14px 0;
+  color:var(--silver-bright);
+  font-family:var(--sans);font-size:13px;font-weight:300;
+  letter-spacing:0.02em;
+  outline:none;
+  transition:border-color .2s;
+}
+.task-input::placeholder{color:var(--silver-dim);opacity:0.7}
+.task-input:focus{border-color:var(--line-2)}
 
 .mode-row{
   display:flex;
@@ -406,40 +440,113 @@ html,body{width:100%;height:100%;background:#07111f;overflow:hidden;color:#dde2e
 }
 .pip.done{background:var(--accent)}
 
-.settings-row{
-  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+/* Length section: presets + tap-to-edit */
+.length-section{
+  display:flex;flex-direction:column;gap:10px;
+  margin-bottom:14px;
 }
-.setting-block{
-  text-align:center;
-  padding:10px 8px;
-  border-radius:12px;
+.length-block{
   background:rgba(5,10,20,0.4);
   border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px 12px;
+}
+.length-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:9px;
 }
 .setting-label{
   font-family:var(--sans);font-size:9px;
   letter-spacing:0.24em;text-transform:uppercase;
   color:var(--silver-dim);
-  margin-bottom:6px;
 }
-.setting-ctrl{
-  display:flex;align-items:center;justify-content:center;gap:14px;
+.length-val{
+  display:flex;align-items:center;gap:10px;
 }
 .adj-btn{
   background:transparent;border:none;
   color:var(--silver-dim);
-  width:26px;height:26px;
-  font-size:18px;cursor:pointer;
+  width:22px;height:22px;
+  font-size:16px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   transition:color .15s;line-height:1;
   font-family:var(--sans);
 }
 .adj-btn:hover{color:var(--silver-bright)}
 .setting-val{
-  font-family:var(--serif);font-size:22px;font-weight:400;
+  font-family:var(--serif);font-size:21px;font-weight:400;
   color:var(--silver-bright);
-  min-width:32px;text-align:center;
+  min-width:30px;text-align:center;
   font-variant-numeric:tabular-nums;
+  cursor:text;
+  border-bottom:1px solid transparent;
+  transition:border-color .2s;
+}
+.setting-val:hover{border-bottom-color:var(--line-2)}
+.val-input{
+  width:46px;
+  background:rgba(5,10,20,0.6);
+  border:1px solid var(--line-2);
+  border-radius:6px;
+  color:var(--silver-bright);
+  font-family:var(--serif);font-size:19px;
+  text-align:center;
+  outline:none;
+  -moz-appearance:textfield;
+}
+.val-input::-webkit-outer-spin-button,
+.val-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+
+.chip-row{display:flex;gap:6px}
+.chip{
+  flex:1;
+  background:transparent;
+  border:1px solid var(--line);
+  border-radius:8px;
+  color:var(--silver-dim);
+  padding:6px 0;
+  font-family:var(--mono);font-size:12px;
+  cursor:pointer;transition:all .2s;
+}
+.chip:hover{border-color:var(--line-2);color:var(--silver)}
+.chip.active{
+  background:rgba(58,123,213,0.18);
+  border-color:var(--line-2);
+  color:var(--silver-bright);
+}
+
+/* Alerts toggles */
+.alerts-row{
+  display:flex;gap:8px;
+  margin-bottom:12px;
+}
+.toggle{
+  flex:1;
+  display:flex;align-items:center;gap:8px;
+  background:rgba(5,10,20,0.4);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:9px 12px;
+  color:var(--silver-dim);
+  font-family:var(--sans);font-size:11px;font-weight:400;
+  letter-spacing:0.04em;
+  cursor:pointer;transition:all .2s;
+}
+.toggle i{font-size:15px}
+.toggle span:nth-child(2){flex:1;text-align:left}
+.toggle-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--line-2);
+  transition:all .25s;
+  flex-shrink:0;
+}
+.toggle.on{
+  color:var(--silver-bright);
+  border-color:var(--line-2);
+}
+.toggle.on .toggle-dot{
+  background:var(--accent);
+  box-shadow:0 0 8px rgba(58,123,213,0.6);
 }
 
 .dock-reset{
@@ -461,6 +568,95 @@ html,body{width:100%;height:100%;background:#07111f;overflow:hidden;color:#dde2e
 .dock-wrap.hidden-bar .dock{
   opacity:0.35;
   transform:scaleY(0.6);
+}
+
+/* ============ ONBOARDING POPUP ============ */
+.onboard-scrim{
+  position:fixed;inset:0;z-index:50;
+  background:rgba(5,10,20,0.55);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .5s ease;
+}
+.onboard-scrim.show{opacity:1;pointer-events:auto}
+
+.onboard{
+  background:var(--glass);
+  backdrop-filter:blur(24px) saturate(140%);
+  -webkit-backdrop-filter:blur(24px) saturate(140%);
+  border:1px solid var(--line-2);
+  border-radius:20px;
+  padding:32px 30px 26px;
+  max-width:380px;width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5),0 1px 0 rgba(255,255,255,0.05) inset;
+  transform:translateY(12px) scale(0.98);
+  transition:transform .5s cubic-bezier(0.22,0.61,0.36,1);
+}
+.onboard-scrim.show .onboard{transform:translateY(0) scale(1)}
+
+.onboard-title{
+  font-family:var(--serif);
+  font-size:30px;font-weight:400;
+  color:var(--silver-bright);
+  text-align:center;
+  letter-spacing:0.01em;
+  margin-bottom:6px;
+}
+.onboard-tagline{
+  font-family:var(--sans);font-size:11px;
+  letter-spacing:0.22em;text-transform:uppercase;
+  color:var(--silver-dim);
+  text-align:center;
+  margin-bottom:24px;
+}
+
+.onboard-list{
+  display:flex;flex-direction:column;gap:16px;
+  margin-bottom:26px;
+}
+.onboard-item{
+  display:flex;align-items:flex-start;gap:14px;
+}
+.onboard-icon{
+  flex-shrink:0;
+  width:36px;height:36px;border-radius:10px;
+  background:rgba(184,202,216,0.10);
+  border:1px solid var(--line-2);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--silver);font-size:16px;
+  margin-top:1px;
+}
+.onboard-text{min-width:0}
+.onboard-text h4{
+  font-family:var(--sans);font-size:13px;font-weight:500;
+  color:var(--silver-bright);
+  letter-spacing:0.02em;
+  margin-bottom:3px;
+}
+.onboard-text p{
+  font-family:var(--sans);font-size:12px;font-weight:300;
+  color:var(--silver);
+  line-height:1.5;
+  opacity:0.8;
+}
+
+.onboard-btn{
+  width:100%;
+  background:rgba(58,123,213,0.18);
+  border:1px solid var(--line-2);
+  color:var(--silver-bright);
+  padding:13px;border-radius:12px;
+  font-family:var(--sans);font-size:11px;
+  letter-spacing:0.22em;text-transform:uppercase;
+  cursor:pointer;transition:all .2s;
+}
+.onboard-btn:hover{
+  background:rgba(58,123,213,0.28);
+  border-color:var(--accent);
 }
 
 /* ============ MOBILE ============ */
@@ -537,6 +733,7 @@ html,body{width:100%;height:100%;background:#07111f;overflow:hidden;color:#dde2e
 <div class="center" id="center">
   <div class="center-time" id="center-time">25:00</div>
   <div class="center-sub" id="center-sub">Ready</div>
+  <div class="center-task" id="center-task"></div>
 </div>
 
 <div class="done-banner" id="done-banner">
@@ -561,6 +758,13 @@ html,body{width:100%;height:100%;background:#07111f;overflow:hidden;color:#dde2e
 
     <div class="dock-panel">
       <div class="dock-panel-inner">
+
+        <!-- Task -->
+        <input type="text" class="task-input" id="task-input"
+          placeholder="What are you focusing on?" maxlength="60"
+          oninput="onTaskInput(event)" onclick="event.stopPropagation()">
+
+        <!-- Mode -->
         <div class="mode-row">
           <button class="mode-btn active" id="btn-work" onclick="switchMode('work',event)">Focus</button>
           <button class="mode-btn" id="btn-break" onclick="switchMode('break',event)">Break</button>
@@ -568,23 +772,53 @@ html,body{width:100%;height:100%;background:#07111f;overflow:hidden;color:#dde2e
 
         <div class="session-row" id="pips"></div>
 
-        <div class="settings-row">
-          <div class="setting-block">
-            <div class="setting-label">Focus</div>
-            <div class="setting-ctrl">
-              <button class="adj-btn" onclick="adjustTime('work',-1,event)">−</button>
-              <span class="setting-val" id="work-val">25</span>
-              <button class="adj-btn" onclick="adjustTime('work',1,event)">+</button>
+        <!-- Length: presets + tap-to-edit -->
+        <div class="length-section">
+          <div class="length-block">
+            <div class="length-head">
+              <span class="setting-label">Focus</span>
+              <span class="length-val">
+                <button class="adj-btn" onclick="adjustTime('work',-1,event)">−</button>
+                <span class="setting-val" id="work-val" onclick="editLength('work',event)">25</span>
+                <button class="adj-btn" onclick="adjustTime('work',1,event)">+</button>
+              </span>
+            </div>
+            <div class="chip-row">
+              <button class="chip" data-which="work" data-val="15" onclick="applyPreset('work',15,event)">15</button>
+              <button class="chip" data-which="work" data-val="25" onclick="applyPreset('work',25,event)">25</button>
+              <button class="chip" data-which="work" data-val="50" onclick="applyPreset('work',50,event)">50</button>
             </div>
           </div>
-          <div class="setting-block">
-            <div class="setting-label">Break</div>
-            <div class="setting-ctrl">
-              <button class="adj-btn" onclick="adjustTime('break',-1,event)">−</button>
-              <span class="setting-val" id="break-val">5</span>
-              <button class="adj-btn" onclick="adjustTime('break',1,event)">+</button>
+
+          <div class="length-block">
+            <div class="length-head">
+              <span class="setting-label">Break</span>
+              <span class="length-val">
+                <button class="adj-btn" onclick="adjustTime('break',-1,event)">−</button>
+                <span class="setting-val" id="break-val" onclick="editLength('break',event)">5</span>
+                <button class="adj-btn" onclick="adjustTime('break',1,event)">+</button>
+              </span>
+            </div>
+            <div class="chip-row">
+              <button class="chip" data-which="break" data-val="5" onclick="applyPreset('break',5,event)">5</button>
+              <button class="chip" data-which="break" data-val="10" onclick="applyPreset('break',10,event)">10</button>
+              <button class="chip" data-which="break" data-val="15" onclick="applyPreset('break',15,event)">15</button>
             </div>
           </div>
+        </div>
+
+        <!-- Alerts -->
+        <div class="alerts-row">
+          <button class="toggle on" id="toggle-sound" onclick="toggleSound(event)">
+            <i class="ti ti-bell"></i>
+            <span>Chime</span>
+            <span class="toggle-dot"></span>
+          </button>
+          <button class="toggle" id="toggle-notify" onclick="toggleNotify(event)">
+            <i class="ti ti-app-window"></i>
+            <span>Notify</span>
+            <span class="toggle-dot"></span>
+          </button>
         </div>
 
         <div class="dock-reset">
@@ -595,6 +829,42 @@ html,body{width:100%;height:100%;background:#07111f;overflow:hidden;color:#dde2e
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ONBOARDING POPUP (first visit only) -->
+<div class="onboard-scrim" id="onboard-scrim">
+  <div class="onboard">
+    <div class="onboard-title">Locus</div>
+    <div class="onboard-tagline">A quiet place to focus</div>
+
+    <div class="onboard-list">
+      <div class="onboard-item">
+        <div class="onboard-icon"><i class="ti ti-border-corners"></i></div>
+        <div class="onboard-text">
+          <h4>The edge is your timer</h4>
+          <p>Light traces the screen's border and recedes as your session counts down.</p>
+        </div>
+      </div>
+
+      <div class="onboard-item">
+        <div class="onboard-icon"><i class="ti ti-player-play"></i></div>
+        <div class="onboard-text">
+          <h4>The bar at the bottom</h4>
+          <p>Hover or tap the small bar to reveal controls — start, switch modes, and set your focus and break lengths. It tucks away while you work.</p>
+        </div>
+      </div>
+
+      <div class="onboard-item">
+        <div class="onboard-icon"><i class="ti ti-maximize"></i></div>
+        <div class="onboard-text">
+          <h4>The dot, top-right</h4>
+          <p>Hover the corner dot to expand it, then click for distraction-free fullscreen.</p>
+        </div>
+      </div>
+    </div>
+
+    <button class="onboard-btn" onclick="dismissOnboard()">Begin</button>
   </div>
 </div>
 
@@ -619,12 +889,18 @@ html,body{width:100%;height:100%;background:#07111f;overflow:hidden;color:#dde2e
 })();
 
 /* ============ STATE ============ */
-var workMins=25, breakMins=5, mode='work', running=false;
-var remaining=25*60, totalSecs=25*60;
-var interval=null, sessCount=0, maxSess=4, waiting=false;
+var workMins=25, breakMins=5, mode='work';
+var totalSecs=25*60, remaining=25*60;     // remaining in seconds (for display/perimeter)
+var endTime=null;                          // wall-clock timestamp the session ends (ms)
+var pausedRemainingMs=null;                // ms left when paused
+var state='ready';                         // 'ready' | 'running' | 'paused' | 'done'
+var rafId=null, sessCount=0, maxSess=4;
 var dockOpen=false, dockHideTimer=null, idleTimer=null;
+var soundOn=true, notifyOn=false;
+var taskText='';
 
 function fmt(s){
+  s=Math.max(0,Math.round(s));
   var m=Math.floor(s/60), sec=s%60;
   return (m<10?'0':'')+m+':'+(sec<10?'0':'')+sec;
 }
@@ -632,6 +908,14 @@ function updateDisplay(){
   var t=fmt(remaining);
   document.getElementById('center-time').textContent=t;
   document.getElementById('dock-time').textContent=t;
+  // Tab title reflects the timer when running so a backgrounded tab still informs
+  if(state==='running'){
+    document.title = t + (mode==='work'?' · Focus':' · Break');
+  } else if(state==='done'){
+    document.title = '✓ Done · Locus';
+  } else {
+    document.title = 'Locus';
+  }
   updatePerimeter();
 }
 function updatePips(){
@@ -642,73 +926,237 @@ function updatePips(){
     el.appendChild(d);
   }
 }
-function setStatus(t){document.getElementById('center-sub').textContent=t}
+
+/* ---- Single source of truth for which UI shows ---- */
+function applyState(){
+  var playIcon=document.getElementById('play-icon');
+  var sub=document.getElementById('center-sub');
+  var banner=document.getElementById('done-banner');
+
+  // Done banner only in 'done'
+  if(state==='done'){ banner.classList.add('show'); }
+  else { banner.classList.remove('show'); }
+
+  // Play/pause icon
+  playIcon.className = (state==='running') ? 'ti ti-player-pause' : 'ti ti-player-play';
+
+  // Status word — single line, never overlaps the banner
+  if(state==='running')      sub.textContent = (mode==='work'?'Focusing':'On break');
+  else if(state==='paused')  sub.textContent = 'Paused';
+  else if(state==='done')    sub.textContent = '';      // banner carries the message
+  else                       sub.textContent = 'Ready';
+
+  // Hide the status word entirely in 'done' so it isn't competing with the banner
+  sub.style.opacity = (state==='done') ? '0' : '';
+}
+
 function setMode(m){
   mode=m;
   totalSecs=(m==='work'?workMins:breakMins)*60;
   remaining=totalSecs;
+  endTime=null; pausedRemainingMs=null;
   var label = m==='work'?'Focus':'Break';
   document.getElementById('dock-mode-tag').textContent=label;
   document.getElementById('btn-work').className='mode-btn'+(m==='work'?' active':'');
   document.getElementById('btn-break').className='mode-btn'+(m==='break'?' active':'');
   document.getElementById('work-val').textContent=workMins;
   document.getElementById('break-val').textContent=breakMins;
+  syncPresetChips();
   updateDisplay();
 }
 function switchMode(m,e){
   if(e)e.stopPropagation();
-  if(!running && !waiting){setMode(m);setStatus('Ready');}
-}
-function toggleTimer(e){
-  if(e)e.stopPropagation();
-  if(waiting)return;
-  if(running){
-    clearInterval(interval);running=false;
-    document.getElementById('play-icon').className='ti ti-player-play';
-    setStatus('Paused');showDock();
-  } else {
-    running=true;
-    document.getElementById('play-icon').className='ti ti-player-pause';
-    setStatus(mode==='work'?'Focusing':'On break');
-    interval=setInterval(tick,1000);
-    closeDock();scheduleHideDock();
+  if(state==='ready' || state==='paused'){
+    state='ready';
+    setMode(m);
+    applyState();
   }
 }
-function tick(){
-  if(remaining<=0){clearInterval(interval);running=false;sessionDone();return;}
-  remaining--;updateDisplay();
+
+/* ---- Timestamp-based loop: immune to background-tab throttling ---- */
+function loop(){
+  if(state!=='running'){ return; }
+  var msLeft = endTime - Date.now();
+  if(msLeft<=0){
+    remaining=0; updateDisplay();
+    sessionDone();
+    return;
+  }
+  remaining = msLeft/1000;
+  updateDisplay();
+  rafId = requestAnimationFrame(loop);
 }
+
+function toggleTimer(e){
+  if(e)e.stopPropagation();
+  if(state==='done') return;
+
+  if(state==='running'){
+    // pause: capture remaining ms
+    pausedRemainingMs = Math.max(0, endTime - Date.now());
+    state='paused';
+    cancelAnimationFrame(rafId);
+    applyState();
+    showDock();
+  } else {
+    // start or resume
+    var msLeft = (state==='paused' && pausedRemainingMs!=null)
+      ? pausedRemainingMs
+      : remaining*1000;
+    endTime = Date.now() + msLeft;
+    state='running';
+    applyState();
+    loop();
+    closeDock(); scheduleHideDock();
+  }
+}
+
 function sessionDone(){
-  document.getElementById('play-icon').className='ti ti-player-play';
-  waiting=true;
-  if(mode==='work'){sessCount=Math.min(sessCount+1,maxSess);updatePips();}
+  state='done';
+  cancelAnimationFrame(rafId);
+  if(mode==='work'){ sessCount=Math.min(sessCount+1,maxSess); updatePips(); }
   document.getElementById('done-msg').textContent =
     mode==='work' ? 'Focus session complete — time for a break.' : 'Break over — ready to focus?';
-  document.getElementById('done-banner').classList.add('show');
-  setStatus('Session complete');showDock();
+  applyState();
+  updateDisplay();
+  showDock();
+  ringChime();
+  fireNotification(mode==='work' ? 'Focus complete' : 'Break complete',
+                   mode==='work' ? 'Time for a break.' : 'Ready to focus?');
 }
+
 function acknowledge(){
-  waiting=false;
-  document.getElementById('done-banner').classList.remove('show');
   var nx = mode==='work' ? 'break' : 'work';
-  if(sessCount>=maxSess && nx==='work'){sessCount=0;updatePips();}
-  setMode(nx);setStatus('Ready');
+  if(sessCount>=maxSess && nx==='work'){ sessCount=0; updatePips(); }
+  state='ready';
+  setMode(nx);
+  applyState();
 }
+
 function resetTimer(e){
   if(e)e.stopPropagation();
-  clearInterval(interval);running=false;waiting=false;
-  document.getElementById('play-icon').className='ti ti-player-play';
-  document.getElementById('done-banner').classList.remove('show');
-  setMode(mode);setStatus('Ready');
+  cancelAnimationFrame(rafId);
+  state='ready';
+  endTime=null; pausedRemainingMs=null;
+  setMode(mode);
+  applyState();
+}
+
+/* ---- Length setting: presets + tap-to-edit ---- */
+function setLength(which,val){
+  val = Math.max(1, Math.min(which==='work'?180:60, Math.round(val)));
+  if(which==='work') workMins=val; else breakMins=val;
+  document.getElementById('work-val').textContent=workMins;
+  document.getElementById('break-val').textContent=breakMins;
+  syncPresetChips();
+  if(state==='ready' && which===mode){ setMode(mode); }
 }
 function adjustTime(which,delta,e){
   if(e)e.stopPropagation();
-  if(running||waiting)return;
-  if(which==='work') workMins=Math.max(1,Math.min(90,workMins+delta));
-  else breakMins=Math.max(1,Math.min(30,breakMins+delta));
-  document.getElementById('work-val').textContent=workMins;
-  document.getElementById('break-val').textContent=breakMins;
-  if(which===mode) setMode(mode);
+  if(state==='running') return;
+  setLength(which, (which==='work'?workMins:breakMins)+delta);
+}
+function applyPreset(which,val,e){
+  if(e)e.stopPropagation();
+  if(state==='running') return;
+  setLength(which,val);
+}
+function syncPresetChips(){
+  document.querySelectorAll('.chip[data-which="work"]').forEach(function(c){
+    c.classList.toggle('active', parseInt(c.dataset.val,10)===workMins);
+  });
+  document.querySelectorAll('.chip[data-which="break"]').forEach(function(c){
+    c.classList.toggle('active', parseInt(c.dataset.val,10)===breakMins);
+  });
+}
+/* Tap-to-edit the number directly */
+function editLength(which,e){
+  if(e)e.stopPropagation();
+  if(state==='running') return;
+  var span=document.getElementById(which+'-val');
+  var current=(which==='work'?workMins:breakMins);
+  var input=document.createElement('input');
+  input.type='number'; input.value=current;
+  input.className='val-input';
+  input.min=1; input.max=(which==='work'?180:60);
+  span.replaceWith(input);
+  input.focus(); input.select();
+  function commit(){
+    var v=parseInt(input.value,10);
+    if(isNaN(v)) v=current;
+    var newSpan=document.createElement('span');
+    newSpan.className='setting-val'; newSpan.id=which+'-val';
+    newSpan.onclick=function(ev){editLength(which,ev);};
+    input.replaceWith(newSpan);
+    setLength(which,v);
+  }
+  input.addEventListener('blur',commit);
+  input.addEventListener('keydown',function(ev){
+    if(ev.key==='Enter'){ input.blur(); }
+    if(ev.key==='Escape'){ input.value=current; input.blur(); }
+  });
+}
+
+/* ---- Task ---- */
+function onTaskInput(e){
+  taskText = e.target.value.trim();
+  var disp=document.getElementById('center-task');
+  if(taskText){ disp.textContent=taskText; disp.classList.add('show'); }
+  else { disp.classList.remove('show'); }
+}
+
+/* ---- Audio chime (Web Audio, no file) ---- */
+var audioCtx=null;
+function ringChime(){
+  if(!soundOn) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended') audioCtx.resume();
+    var now=audioCtx.currentTime;
+    // Two soft sine tones a fifth apart — a clean, professional bell
+    var freqs=[660, 988];   // E5, B5
+    freqs.forEach(function(f,i){
+      var osc=audioCtx.createOscillator();
+      var gain=audioCtx.createGain();
+      osc.type='sine'; osc.frequency.value=f;
+      var t=now + i*0.16;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.18, t+0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t+1.6);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t+1.7);
+    });
+  }catch(err){}
+}
+
+/* ---- Browser notification ---- */
+function fireNotification(title,body){
+  if(!notifyOn) return;
+  if(!('Notification' in window)) return;
+  if(Notification.permission==='granted'){
+    try{ new Notification(title,{body:body,silent:true}); }catch(e){}
+  }
+}
+function setNotify(on){
+  if(on && 'Notification' in window && Notification.permission!=='granted'){
+    Notification.requestPermission().then(function(p){
+      notifyOn = (p==='granted');
+      document.getElementById('toggle-notify').classList.toggle('on', notifyOn);
+    });
+  } else {
+    notifyOn = on && ('Notification' in window) && Notification.permission==='granted';
+    document.getElementById('toggle-notify').classList.toggle('on', notifyOn);
+  }
+}
+function toggleSound(e){
+  if(e)e.stopPropagation();
+  soundOn=!soundOn;
+  document.getElementById('toggle-sound').classList.toggle('on', soundOn);
+  if(soundOn) ringChime(); // preview
+}
+function toggleNotify(e){
+  if(e)e.stopPropagation();
+  setNotify(!notifyOn);
 }
 
 /* ============ PERIMETER — uniform glow tracing the physical screen edge ============ */
@@ -794,18 +1242,18 @@ function closeDock(){
 function showDock(){
   document.getElementById('dock-wrap').classList.remove('hidden-bar');
   clearTimeout(dockHideTimer);
-  if(running && !dockOpen) scheduleHideDock();
+  if(state==='running' && !dockOpen) scheduleHideDock();
 }
 function scheduleHideDock(){
   clearTimeout(dockHideTimer);
   dockHideTimer = setTimeout(function(){
-    if(running && !dockOpen && !waiting){
+    if(state==='running' && !dockOpen){
       document.getElementById('dock-wrap').classList.add('hidden-bar');
     }
   }, 4000);
 }
 function onActivity(){
-  if(running && !waiting){
+  if(state==='running'){
     showDock();
     document.body.classList.remove('idle');
     clearTimeout(idleTimer);
@@ -814,6 +1262,16 @@ function onActivity(){
 }
 ['mousemove','touchstart','keydown','click'].forEach(function(ev){
   document.addEventListener(ev, onActivity, {passive:true});
+});
+
+/* Resync the moment the tab becomes visible again — catches up instantly
+   even if rAF was fully paused while backgrounded. */
+document.addEventListener('visibilitychange', function(){
+  if(!document.hidden && state==='running'){
+    var msLeft = endTime - Date.now();
+    if(msLeft<=0){ remaining=0; updateDisplay(); sessionDone(); }
+    else { remaining=msLeft/1000; updateDisplay(); }
+  }
 });
 
 /* ============ FULLSCREEN ============ */
@@ -832,10 +1290,32 @@ document.addEventListener('fullscreenchange',function(){
   }
 });
 
+/* ============ ONBOARDING ============ */
+function dismissOnboard(){
+  document.getElementById('onboard-scrim').classList.remove('show');
+  try{ localStorage.setItem('locus_seen','1'); }catch(e){}
+}
+function maybeShowOnboard(){
+  var seen = false;
+  try{ seen = localStorage.getItem('locus_seen')==='1'; }catch(e){}
+  if(!seen){
+    // small delay so the app paints first, then the popup fades in over it
+    setTimeout(function(){
+      document.getElementById('onboard-scrim').classList.add('show');
+    }, 600);
+  }
+}
+
 /* ============ INIT ============ */
 buildPerimeter();
 setMode('work');
 updatePips();
+applyState();
+syncPresetChips();
+maybeShowOnboard();
+
+// Pin dock open while typing the task (so hover-collapse doesn't interrupt)
+document.getElementById('task-input').addEventListener('focus', openDock);
 </script>
 </body>
 </html>
