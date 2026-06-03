@@ -548,6 +548,19 @@ html,body{width:100%;height:100%;background:#07111f;overflow:hidden;color:#dde2e
   background:var(--accent);
   box-shadow:0 0 8px rgba(58,123,213,0.6);
 }
+.alert-hint{
+  font-family:var(--sans);font-size:10px;font-weight:300;
+  letter-spacing:0.02em;line-height:1.4;
+  color:var(--silver-dim);
+  text-align:center;
+  max-height:0;overflow:hidden;opacity:0;
+  transition:max-height .3s ease,opacity .3s ease,margin .3s ease;
+  margin-bottom:0;
+}
+.alert-hint.show{
+  max-height:40px;opacity:0.85;
+  margin-bottom:10px;
+}
 
 .dock-reset{
   display:flex;justify-content:center;
@@ -820,6 +833,7 @@ html,body{width:100%;height:100%;background:#07111f;overflow:hidden;color:#dde2e
             <span class="toggle-dot"></span>
           </button>
         </div>
+        <div class="alert-hint" id="alert-hint"></div>
 
         <div class="dock-reset">
           <button class="reset-btn" onclick="resetTimer(event)">
@@ -872,20 +886,37 @@ html,body{width:100%;height:100%;background:#07111f;overflow:hidden;color:#dde2e
 /* ============ CANVAS GRAIN ============ */
 (function(){
   var c = document.getElementById('grain-canvas');
-  function resize(){
-    c.width = window.innerWidth;
-    c.height = window.innerHeight;
-    var ctx = c.getContext('2d');
-    var imgData = ctx.createImageData(c.width, c.height);
+  if(!c) return;
+  // Render a small noise tile once, then repeat it via CSS background.
+  // This avoids filling the whole viewport (cheap) and never depends on
+  // window dimensions being non-zero at load (prevents IndexSizeError).
+  var TILE = 160;
+  function buildTile(){
+    var off = document.createElement('canvas');
+    off.width = TILE; off.height = TILE;
+    var ctx = off.getContext('2d');
+    if(!ctx) return;
+    var imgData = ctx.createImageData(TILE, TILE);
     var d = imgData.data;
     for(var i=0;i<d.length;i+=4){
       var v = Math.random()*255;
       d[i]=v;d[i+1]=v;d[i+2]=v;d[i+3]=255;
     }
     ctx.putImageData(imgData,0,0);
+    // Hide the <canvas> element and paint the tile as a repeating background
+    c.style.display='none';
+    try{
+      var url = off.toDataURL('image/png');
+      c.style.display='';
+      c.style.backgroundImage = 'url('+url+')';
+      c.style.backgroundRepeat = 'repeat';
+      // Clear any intrinsic canvas drawing; we only use it as a styled box
+      c.width = 1; c.height = 1;
+    }catch(e){
+      // toDataURL can throw in some sandboxes; fall back to leaving it blank
+    }
   }
-  resize();
-  window.addEventListener('resize',resize);
+  buildTile();
 })();
 
 /* ============ STATE ============ */
@@ -1137,16 +1168,51 @@ function fireNotification(title,body){
     try{ new Notification(title,{body:body,silent:true}); }catch(e){}
   }
 }
+function reflectNotifyToggle(){
+  document.getElementById('toggle-notify').classList.toggle('on', notifyOn);
+}
 function setNotify(on){
-  if(on && 'Notification' in window && Notification.permission!=='granted'){
-    Notification.requestPermission().then(function(p){
-      notifyOn = (p==='granted');
-      document.getElementById('toggle-notify').classList.toggle('on', notifyOn);
-    });
-  } else {
-    notifyOn = on && ('Notification' in window) && Notification.permission==='granted';
-    document.getElementById('toggle-notify').classList.toggle('on', notifyOn);
+  // Turning OFF is always allowed
+  if(!on){ notifyOn=false; reflectNotifyToggle(); return; }
+
+  // Turning ON: check support + permission
+  if(!('Notification' in window)){
+    notifyToggleHint('Notifications not supported in this browser');
+    notifyOn=false; reflectNotifyToggle();
+    return;
   }
+  if(Notification.permission==='granted'){
+    notifyOn=true; reflectNotifyToggle();
+    return;
+  }
+  if(Notification.permission==='denied'){
+    notifyToggleHint('Notifications are blocked — enable them in your browser’s site settings');
+    notifyOn=false; reflectNotifyToggle();
+    return;
+  }
+  // permission === 'default' → ask
+  var handle=function(p){
+    notifyOn = (p==='granted');
+    reflectNotifyToggle();
+    if(!notifyOn) notifyToggleHint('Permission dismissed');
+    else fireNotification('Notifications on','You’ll be alerted when a session ends.');
+  };
+  try{
+    var res = Notification.requestPermission(handle); // callback form (older Safari)
+    if(res && typeof res.then==='function'){ res.then(handle); } // promise form
+  }catch(err){
+    notifyToggleHint('Could not enable notifications here');
+    notifyOn=false; reflectNotifyToggle();
+  }
+}
+// Brief inline hint under the toggles
+function notifyToggleHint(msg){
+  var el=document.getElementById('alert-hint');
+  if(!el) return;
+  el.textContent=msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t=setTimeout(function(){ el.classList.remove('show'); }, 4000);
 }
 function toggleSound(e){
   if(e)e.stopPropagation();
